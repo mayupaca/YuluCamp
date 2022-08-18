@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
+const ejsMate = require("ejs-mate");
 const methodOverride = require("method-override");
 const Campground = require("./models/campground");
 
@@ -22,6 +23,7 @@ mongoose
     console.log(err);
   });
 
+app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -59,20 +61,22 @@ app.get("/campgrounds/:id/edit", async (req, res) => {
   res.render("campgrounds/edit", { campground });
 });
 // ---------------------------------------------------- PUTで飛ばされた変更を受け取る
-app.put('/campgrounds/:id', async (req, res) => {
+app.put("/campgrounds/:id", async (req, res) => {
   //更新したいcampsiteのIDを取得
   const { id } = req.params;
   // Campground Modelから対象のidのbody情報取得
-  const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
-  res.redirect(`/campgrounds/${campground._id}`)
+  const campground = await Campground.findByIdAndUpdate(id, {
+    ...req.body.campground,
+  });
+  res.redirect(`/campgrounds/${campground._id}`);
 });
 // ---------------------------------------------------- Delete
-app.delete('/campgrounds/:id', async (req, res) => {
+app.delete("/campgrounds/:id", async (req, res) => {
   const { id } = req.params;
   await Campground.findByIdAndDelete(id);
-  res.redirect('/campgrounds')
-})
-// ---------------------------------------------------- 
+  res.redirect("/campgrounds");
+});
+// ----------------------------------------------------
 app.listen(port, () => {
   console.log("Listening to port 3000...");
 });
