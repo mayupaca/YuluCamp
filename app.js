@@ -2,11 +2,12 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const ejsMate = require("ejs-mate");
-const { campgroundSchema } = require("./schemas");
+const { campgroundSchema, reviewSchema } = require("./schemas");
 const catchAsync = require("./utils/catchAsync");
 const ExpressError = require("./utils/ExpressError");
 const methodOverride = require("method-override");
 const Campground = require("./models/campground");
+const Review = require("./models/review");
 
 const app = express();
 
@@ -35,6 +36,16 @@ app.use(methodOverride("_method"));
 
 const validateCampground = (req, res, next) => {
   const { error } = campgroundSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((detail) => detail.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
+const validateReview = (req, res, next) => {
+  const { error } = reviewSchema.validate(req.body);
   if (error) {
     const msg = error.details.map((detail) => detail.message).join(",");
     throw new ExpressError(msg, 400);
@@ -77,7 +88,9 @@ app.post(
 app.get(
   "/campgrounds/:id",
   catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id);
+    const campground = await Campground.findById(req.params.id).populate(
+      "reviews"
+    );
     res.render("campgrounds/show", { campground });
   })
 );
@@ -112,6 +125,37 @@ app.delete(
     res.redirect("/campgrounds");
   })
 );
+
+// ---------------------------------------------------- Campground Review投稿
+app.post(
+  "/campgrounds/:id/reviews",
+  validateReview,
+  catchAsync(async (req, res) => {
+    // データから対象になるキャンプグラウンドを取得
+    const campground = await Campground.findById(req.params.id);
+    // review.jsのSchemaからデータが渡ってくるから、req.body.reviewを使ってインスタンスを作る
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+
+    res.redirect(`/campgrounds/${campground._id}`);
+  })
+);
+// ---------------------------------------------------- Delete Campground review
+app.delete(
+  "/campgrounds/:id/reviews/:reviewId",
+  catchAsync(async (req, res) => {
+    // $pull = 配列の特定の条件を満たした要素をremoveする
+    const { id, reviewId } = req.params;
+    // Campgroundの特定のidのreviewsの特定のreviewIdをpull(引っ張り出す)してupdate
+    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    // pullしたreviewを削除
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
+  })
+);
+
 // ---------------------------------------------------- 404を返す
 // .all('*') = 全部のCRUDと全path
 app.all("*", (req, res, next) => {
