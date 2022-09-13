@@ -27,6 +27,10 @@ router.get(
 );
 // --------------------------------------------------- Create New Campsite Form
 router.get("/new", (req, res) => {
+  if (!req.isAuthenticated()) {
+    req.flash("error", "You need to login:(");
+    return res.redirect("/login");
+  }
   res.render("campgrounds/new");
 });
 // --------------------------------------------------- New formから送られた情報を受け取る
