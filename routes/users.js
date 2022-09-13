@@ -22,7 +22,9 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.get("/login", (req, res) => {});
+router.get("/login", (req, res) => {
+  res.render("users/login");
+});
 
 router.post(
   "/login",
@@ -35,5 +37,16 @@ router.post(
     res.redirect("/campgrounds");
   }
 );
+
+router.get("/logout", (req, res) => {
+  req.logout(function (err) {
+    if (err) {
+      req.flash("error", "Failed Logout");
+      return res.redirect("/campgrounds");
+    }
+    req.flash("success", "Success Logout!!");
+    res.redirect("/campgrounds");
+  });
+});
 
 module.exports = router;
