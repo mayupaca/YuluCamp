@@ -1,31 +1,22 @@
 const express = require("express");
 // 親のパラメータを使いたい場合はmergeParamsを使う
 const router = express.Router({ mergeParams: true });
+const { isLoggedIn, validateReview, isReviewAuthor } = require("../middleware");
 const catchAsync = require("../utils/catchAsync");
-const ExpressError = require("../utils/ExpressError");
 const Campground = require("../models/campground");
 const Review = require("../models/review");
-const { reviewSchema } = require("../schemas");
-
-const validateReview = (req, res, next) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((detail) => detail.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
 
 // ---------------------------------------------------- Campground Review投稿
 router.post(
   "/",
+  isLoggedIn,
   validateReview,
   catchAsync(async (req, res) => {
     // データから対象になるキャンプグラウンドを取得
     const campground = await Campground.findById(req.params.id);
     // review.jsのSchemaからデータが渡ってくるから、req.body.reviewを使ってインスタンスを作る
     const review = new Review(req.body.review);
+    review.author = req.user._id;
     campground.reviews.push(review);
     await review.save();
     await campground.save();
@@ -37,6 +28,8 @@ router.post(
 // ---------------------------------------------------- Delete Campground review
 router.delete(
   "/:reviewId",
+  isLoggedIn,
+  isReviewAuthor,
   catchAsync(async (req, res) => {
     // $pull = 配列の特定の条件を満たした要素をremoveする
     const { id, reviewId } = req.params;
