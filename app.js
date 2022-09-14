@@ -64,7 +64,6 @@ passport.deserializeUser(User.deserializeUser());
 app.use(flash());
 // flashを使って一時的なメッセージの表示
 app.use((req, res, next) => {
-  
   res.locals.currentUser = req.user;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
