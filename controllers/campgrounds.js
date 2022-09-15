@@ -1,4 +1,5 @@
 const Campground = require("../models/campground");
+const { cloudinary } = require('../cloudinary');
 
 module.exports.index = async (req, res) => {
   // Campground modelの全データを.findメソッドで取得
@@ -29,8 +30,13 @@ module.exports.showCampground = async (req, res) => {
 module.exports.createCampground = async (req, res) => {
   // if (req.body.campground) throw new ExpressError("Unexpected campground data.", 400);
   const campground = new Campground(req.body.campground);
+  campground.images = req.files.map((f) => ({
+    url: f.path,
+    filename: f.filename,
+  }));
   campground.author = req.user._id;
   await campground.save();
+  console.log(campground);
   // 新しいキャンプ場情報をsaveしてからflash
   req.flash("success", "Registered new Campground!!");
   res.redirect(`campgrounds/${campground._id}`);
@@ -48,14 +54,26 @@ module.exports.renderEditForm = async (req, res) => {
 };
 
 module.exports.updateCampground = async (req, res) => {
+  console.log(req.body);
   //更新したいcampsiteのIDを取得
   const { id } = req.params;
   // Campground Modelから対象のidのbody情報取得
-  const camp = await Campground.findByIdAndUpdate(id, {
+  const campground = await Campground.findByIdAndUpdate(id, {
     ...req.body.campground,
   });
+  const imgs = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+  campground.images.push(...imgs);
+  await campground.save();
+  if (req.body.deleteImages) {
+    for (let filename of req.body.deleteImages) {
+      await cloudinary.uploader.destroy(filename);
+    }
+    await campground.updateOne({
+      $pull: { images: { filename: { $in: req.body.deleteImages } } },
+    });
+  }
   req.flash("success", "Updated Campground!!");
-  res.redirect(`/campgrounds/${camp._id}`);
+  res.redirect(`/campgrounds/${campground._id}`);
 };
 
 module.exports.deleteCampground = async (req, res) => {

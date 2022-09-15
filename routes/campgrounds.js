@@ -3,7 +3,9 @@ const router = express.Router();
 const campgrounds = require("../controllers/campgrounds");
 const catchAsync = require("../utils/catchAsync");
 const { isLoggedIn, isAuthor, validateCampground } = require("../middleware");
-
+const multer = require("multer");
+const { storage } = require("../cloudinary");
+const upload = multer({ storage });
 
 router
   .route("/")
@@ -12,6 +14,7 @@ router
   // catchAsync関数(wrapper関数)をutilフォルダーに作って全てのasyncでerrorを使えるようにする
   .post(
     isLoggedIn,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.createCampground)
   );
@@ -27,6 +30,7 @@ router
   .put(
     isLoggedIn,
     isAuthor,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.updateCampground)
   )
