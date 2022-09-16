@@ -1,5 +1,9 @@
 const Campground = require("../models/campground");
-const { cloudinary } = require('../cloudinary');
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const mapboxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapboxToken });
+
+const { cloudinary } = require("../cloudinary");
 
 module.exports.index = async (req, res) => {
   // Campground modelの全データを.findメソッドで取得
@@ -28,8 +32,15 @@ module.exports.showCampground = async (req, res) => {
 };
 
 module.exports.createCampground = async (req, res) => {
-  // if (req.body.campground) throw new ExpressError("Unexpected campground data.", 400);
+  const geoData = await geocoder
+    .forwardGeocode({
+      query: req.body.campground.location,
+      limit: 1,
+    })
+    .send();
+
   const campground = new Campground(req.body.campground);
+  campground.geometry = geoData.body.features[0].geometry;
   campground.images = req.files.map((f) => ({
     url: f.path,
     filename: f.filename,
