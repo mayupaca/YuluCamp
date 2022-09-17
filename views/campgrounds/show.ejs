@@ -62,9 +62,8 @@
     </div>
   </div>
   <div class="col-6">
-    <div id="map" style="width: 400px; height: 300px"></div>
+    <div id="map"></div>
 
-    
     <% if(currentUser) { %>
     <h2>Review</h2>
     <form
@@ -74,7 +73,6 @@
       novalidate
     >
       <div>
-        
         <fieldset class="starability-basic">
           <input
             type="radio"
@@ -136,7 +134,7 @@
         <p class="starability-result" data-rating="<%= review.rating %>">
           Rated: <%= review.rating %> stars
         </p>
-          <%= review.author.username %>
+        <%= review.author.username %>
         <p class="card-text">Comment: <%= review.body %></p>
         <% if (currentUser && review.author.equals(currentUser._id)) { %>
 
@@ -158,4 +156,3 @@
 </script>
 
 <script src="/javascripts/showPageMap.js"></script>
-
