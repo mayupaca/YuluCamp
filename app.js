@@ -25,7 +25,7 @@ const reviewRoutes = require("./routes/reviews");
 const MongoStore = require("connect-mongo");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 //"mongodb://localhost:27017/yulu-camp"
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yulu-camp";
@@ -162,5 +162,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log("Listening to port 3000...");
+  console.log(`Listening to port ${port}...`);
 });
