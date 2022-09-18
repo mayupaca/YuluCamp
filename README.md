@@ -37,7 +37,3 @@ https://pure-dusk-21602.herokuapp.com/
 
 >Cannot edit or delete posts and comments created by other users
 ![Alt text](public/image/without_auth.png)
-
-
-
-
