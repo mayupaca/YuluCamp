@@ -22,11 +22,15 @@ const userRoutes = require("./routes/users");
 const campgroundRoutes = require("./routes/campgrounds");
 const reviewRoutes = require("./routes/reviews");
 
+const MongoStore = require("connect-mongo");
+
 const app = express();
 const port = 3000;
 
+//"mongodb://localhost:27017/yulu-camp"
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yulu-camp";
 mongoose
-  .connect("mongodb://localhost:27017/yulu-camp", {
+  .connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
@@ -50,9 +54,24 @@ app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(mongoSanitize());
 
+const secret = process.env.SECRET || 'mysecret'
+
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  crypto: {
+    secret,
+  },
+  touchAfter: 24 * 3600,
+});
+
+store.on("error", (e) => {
+  console.log("session", e);
+});
+
 const sessionConfig = {
+  store,
   name: "session",
-  secret: "mysecret",
+  secret,
   resave: false,
   saveUninitialized: true,
   cookie: {
