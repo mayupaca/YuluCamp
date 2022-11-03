@@ -18,7 +18,7 @@ This is Colt Steele's project from The Web Developer Bootcamp 2021 on Udemy.
 ### Deployed using Heroke
 https://pure-dusk-21602.herokuapp.com/
 
-## Functionalities
+## Screenshots
 > Everyone can view the campgrounds infomation and reviews without login.
 ![Alt text](public/image/campgrounds.png)
 ![Alt text](public/image/camp_show.png)
