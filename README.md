@@ -3,7 +3,8 @@
 YuluCamp is a full-stack Camp Reviewing website project. People can post their own camp sites with prices or can review other's camp sites. YuluCamp was created using Node.js, Express, Bootstrap, and MongoDB.
 This is Colt Steele's project from The Web Developer Bootcamp 2021 on Udemy.
 ## Tech Stack
-- HTML and CSS
+- HTML
+- CSS
 - Bootstrap
 - EJS
 - Node.js
